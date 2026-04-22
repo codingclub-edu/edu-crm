@@ -1,98 +1,73 @@
-import axios from "axios";
+import axios from 'axios'
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL + "/api",
+  baseURL: import.meta.env.VITE_API_BASE_URL + '/api',
+  withCredentials: true, // send refresh cookie automatically
   headers: {
-    "Content-Type": "application/json",
-    // Required for ngrok free tier
-    "ngrok-skip-browser-warning": "true",
+    'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': 'true',
   },
-});
+})
 
-// Attach access token to every request
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("access_token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
+    const token = localStorage.getItem('access_token')
+    if (token) config.headers.Authorization = `Bearer ${token}`
+    return config
   },
-  (error) => Promise.reject(error),
-);
+  (error) => Promise.reject(error)
+)
 
-let isRefreshing = false;
-let failedQueue = [];
+let isRefreshing = false
+let failedQueue = []
 
 const processQueue = (error, token = null) => {
-  failedQueue.forEach((prom) => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(token);
-    }
-  });
-  failedQueue = [];
-};
+  failedQueue.forEach((p) => (error ? p.reject(error) : p.resolve(token)))
+  failedQueue = []
+}
 
-// Auto refresh access token on 401
 api.interceptors.response.use(
-  (response) => response,
+  (res) => res,
   async (error) => {
-    const originalRequest = error.config;
+    const original = error.config
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !original._retry) {
       if (isRefreshing) {
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        })
+        return new Promise((resolve, reject) => failedQueue.push({ resolve, reject }))
           .then((token) => {
-            originalRequest.headers.Authorization = `Bearer ${token}`;
-            return api(originalRequest);
+            original.headers.Authorization = `Bearer ${token}`
+            return api(original)
           })
-          .catch((err) => Promise.reject(err));
       }
 
-      originalRequest._retry = true;
-      isRefreshing = true;
-
-      const refreshToken = localStorage.getItem("refresh_token");
-
-      if (!refreshToken) {
-        isRefreshing = false;
-        localStorage.clear();
-        window.location.href = "/login";
-        return Promise.reject(error);
-      }
+      original._retry = true
+      isRefreshing = true
 
       try {
+        // refresh cookie is sent automatically via withCredentials
         const { data } = await axios.post(
-          `${import.meta.env.VITE_API_BASE_URL}/auth/refresh`,
-          { refresh_token: refreshToken },
-          { headers: { "ngrok-skip-browser-warning": "true" } },
-        );
-
-        const newAccessToken = data.access_token;
-        localStorage.setItem("access_token", newAccessToken);
-        if (data.refresh_token) {
-          localStorage.setItem("refresh_token", data.refresh_token);
-        }
-
-        api.defaults.headers.common.Authorization = `Bearer ${newAccessToken}`;
-        processQueue(null, newAccessToken);
-        return api(originalRequest);
+          `${import.meta.env.VITE_API_BASE_URL}/api/auth/refresh`,
+          {},
+          { withCredentials: true, headers: { 'ngrok-skip-browser-warning': 'true' } }
+        )
+        const newToken = data.accessToken
+        localStorage.setItem('access_token', newToken)
+        api.defaults.headers.common.Authorization = `Bearer ${newToken}`
+        processQueue(null, newToken)
+        return api(original)
       } catch (refreshError) {
-        processQueue(refreshError, null);
-        localStorage.clear();
-        window.location.href = "/login";
-        return Promise.reject(refreshError);
+        processQueue(refreshError, null)
+        localStorage.removeItem('access_token')
+        localStorage.removeItem('user')
+        window.location.href = '/login'
+        return Promise.reject(refreshError)
       } finally {
-        isRefreshing = false;
+        isRefreshing = false
       }
     }
 
-    return Promise.reject(error);
-  },
-);
+    return Promise.reject(error)
+  }
+)
 
-export default api;
+export default api
