@@ -4,8 +4,9 @@ import { useAuth } from '../context/AuthContext'
 
 const ROLE_HOME = {
   admin: '/admin/dashboard',
-  manager: '/manager/dashboard',
-  user: '/user/dashboard',
+  teacher: '/manager/dashboard',
+  student: '/student/dashboard',
+  staff: '/staff/dashboard',
 }
 
 // Formats digits into (XX) XXX-XX-XX
