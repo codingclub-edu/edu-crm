@@ -1,5 +1,5 @@
 import { useFetch } from '../../hooks/useFetch'
-import { getAllAttendances } from '../../api/attendance'
+import { getMyAttendance } from '../../api/attendance'
 import { PageShell, LoadingState, ErrorState, EmptyState } from '../../components/PageShell'
 
 const STATUS_MAP = {
@@ -10,7 +10,7 @@ const STATUS_MAP = {
 }
 
 export default function Attendance() {
- const { data, loading, error } = useFetch(getAllAttendances)
+  const { data, loading, error } = useFetch(getMyAttendance)
   const records = Array.isArray(data) ? data : []
 
   const total = records.length

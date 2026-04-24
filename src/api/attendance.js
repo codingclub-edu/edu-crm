@@ -21,3 +21,4 @@ export const getGroupAttendanceCalendar = (groupId, params) =>
 
 export const updateGroupDayAttendance = (groupId, body) =>
   api.put(`/attendance/group/${groupId}/day`, body)
+export const getMyAttendance = () => api.get('/attendance/me/attendance')

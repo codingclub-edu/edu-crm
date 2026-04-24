@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useFetch } from '../../hooks/useFetch'
 import { getMe, updateMe } from '../../api/auth'
+import { getMyStudentData } from '../../api/students'
 import { LoadingState, ErrorState } from '../../components/PageShell'
 import { useTheme } from '../../context/ThemeContext'
 
@@ -83,12 +84,12 @@ function EditModal({ user, onClose, onSaved }) {
 
 export default function MyProfile() {
   const { data: profile, loading: pLoading, error: pError } = useFetch(getMe)
-
+  const { data: studentData, loading: sLoading } = useFetch(getMyStudentData)
   const { theme, setTheme, themes } = useTheme()
   const [editOpen, setEditOpen] = useState(false)
   const [localUser, setLocalUser] = useState(null)
 
-  if (pLoading) return <LoadingState />
+  if (pLoading || sLoading) return <LoadingState />
   if (pError) return <ErrorState message={pError} />
 
   const user     = localUser ?? profile

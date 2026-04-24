@@ -6,10 +6,10 @@ const NAV = {
   admin: [
     { label: 'Dashboard', to: '/admin/dashboard', icon: HomeIcon },
     { label: 'Students', to: '/admin/students', icon: AcademicIcon },
-    { label: 'Teachers', to: '/admin/teachers', icon: UsersIcon },
-    { label: 'Courses', to: '/admin/courses', icon: ClipboardIcon },
-    { label: 'Groups', to: '/admin/groups', icon: BriefcaseIcon },
-    { label: 'Payments', to: '/admin/payments', icon: CreditCardIcon },
+    { label: 'Contacts', to: '/admin/contacts', icon: UsersIcon },
+    { label: 'Deals', to: '/admin/deals', icon: BriefcaseIcon },
+    { label: 'Reports', to: '/admin/reports', icon: ChartIcon },
+    { label: 'Settings', to: '/admin/settings', icon: CogIcon },
   ],
   teacher: [
     { label: 'Dashboard', to: '/manager/dashboard', icon: HomeIcon },

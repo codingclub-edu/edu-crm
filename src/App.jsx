@@ -9,10 +9,6 @@ import AdminDashboard from "./pages/admin/Dashboard";
 import ManagerDashboard from "./pages/manager/Dashboard";
 import UserDashboard from "./pages/user/Dashboard";
 import StudentsPage from "./pages/admin/Students";
-import TeachersPage from "./pages/admin/teachers";
-import CoursesPage from "./pages/admin/courses";
-import GroupsPage from "./pages/admin/groups";
-import PaymentsPage from "./pages/admin/payments";
 import MyProfile from "./pages/student/MyProfile";
 import MyGroups from "./pages/student/MyGroups";
 import HomeworkPage from "./pages/student/Homework";
@@ -35,10 +31,6 @@ export default function App() {
             <Route element={<DashboardLayout />}>
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
               <Route path="/admin/students" element={<StudentsPage />} />
-              <Route path="/admin/teachers" element={<TeachersPage />} />
-              <Route path="/admin/courses" element={<CoursesPage />} />
-              <Route path="/admin/groups" element={<GroupsPage />} />
-              <Route path="/admin/payments" element={<PaymentsPage />} />
               <Route path="/admin/contacts" element={<PlaceholderPage title="Contacts" />} />
               <Route path="/admin/deals" element={<PlaceholderPage title="Deals" />} />
               <Route path="/admin/reports" element={<PlaceholderPage title="Reports" />} />
