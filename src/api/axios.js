@@ -4,6 +4,8 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL + '/api',
   withCredentials: true, // send refresh cookie automatically
   headers: {
+  'Content-Type': 'application/json',
+},
     'Content-Type': 'application/json',
     'ngrok-skip-browser-warning': 'true',
   },
@@ -11,6 +13,7 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
+    const token = localStorage.getItem('accessToken')
     const token = localStorage.getItem('access_token')
     if (token) config.headers.Authorization = `Bearer ${token}`
     return config
