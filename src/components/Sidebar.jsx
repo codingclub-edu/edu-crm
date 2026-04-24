@@ -12,11 +12,8 @@ const NAV = {
     { label: 'Settings', to: '/admin/settings', icon: CogIcon },
   ],
   teacher: [
-    { label: 'Dashboard', to: '/manager/dashboard', icon: HomeIcon },
-    { label: 'Students', to: '/manager/students', icon: AcademicIcon },
-    { label: 'Contacts', to: '/manager/contacts', icon: UsersIcon },
-    { label: 'Deals', to: '/manager/deals', icon: BriefcaseIcon },
-    { label: 'Reports', to: '/manager/reports', icon: ChartIcon },
+    { label: 'Dashboard',  to: '/teacher/dashboard', icon: HomeIcon },
+    { label: 'My Groups',  to: '/teacher/groups',    icon: UsersIcon },
   ],
   student: [
     { label: 'Dashboard', to: '/student/dashboard', icon: HomeIcon },
@@ -112,33 +109,61 @@ function ProfileButton({ collapsed, user, onNavClick }) {
     ? user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
     : '??'
 
-  const profilePath = user?.role === 'student' ? '/student/profile' : '#'
+  const profilePath = { student: '/student/profile', teacher: '/teacher/profile' }[user?.role] ?? '#'
 
   if (collapsed) {
     return (
-      <div className="tooltip tooltip-right flex justify-center" data-tip="Profile">
-        <Link to={profilePath} onClick={onNavClick} className="btn btn-ghost btn-sm btn-square p-0">
+      <div className="tooltip tooltip-right flex justify-center" data-tip={user?.name ?? 'My Profile'}>
+        <Link
+          to={profilePath}
+          onClick={onNavClick}
+          className="relative flex items-center justify-center w-10 h-10 rounded-xl ring-2 ring-base-200 hover:ring-primary/40 transition-all duration-200 group"
+        >
           <div className="avatar placeholder">
-            <div className="bg-primary text-primary-content rounded-full w-8">
+            <div className="bg-gradient-to-br from-primary to-primary/70 text-primary-content rounded-xl w-10 h-10 shadow-sm group-hover:shadow-md transition-shadow">
               <span className="text-xs font-bold">{initials}</span>
             </div>
           </div>
+          <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-success ring-2 ring-base-100" />
         </Link>
       </div>
     )
   }
 
   return (
-    <Link to={profilePath} onClick={onNavClick} className="btn btn-ghost btn-sm w-full flex items-center gap-3 justify-start px-3 text-base-content/70 hover:text-base-content">
-      <div className="avatar placeholder shrink-0">
-        <div className="bg-primary text-primary-content rounded-full w-7">
-          <span className="text-xs font-bold">{initials}</span>
+    <Link
+      to={profilePath}
+      onClick={onNavClick}
+      className="group flex items-center gap-3 px-3 py-2.5 rounded-xl bg-base-200/50 hover:bg-base-200 border border-base-200 hover:border-base-300 transition-all duration-200"
+    >
+      {/* Avatar */}
+      <div className="relative shrink-0">
+        <div className="avatar placeholder">
+          <div className="bg-gradient-to-br from-primary to-primary/70 text-primary-content rounded-xl w-9 h-9 shadow-sm">
+            <span className="text-xs font-bold">{initials}</span>
+          </div>
         </div>
+        <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-success ring-2 ring-base-100" />
       </div>
-      <div className="flex flex-col items-start min-w-0">
-        <span className="text-sm font-medium truncate leading-tight">{user?.name ?? 'My Profile'}</span>
-        <span className="text-xs text-base-content/40 capitalize leading-tight">{user?.role}</span>
+
+      {/* Text */}
+      <div className="flex flex-col min-w-0 flex-1">
+        <span className="text-sm font-semibold text-base-content truncate leading-tight">
+          {user?.name ?? 'My Profile'}
+        </span>
+        <span className="text-xs text-base-content/40 capitalize leading-tight mt-0.5">
+          {user?.role}
+        </span>
       </div>
+
+      {/* Chevron */}
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="w-3.5 h-3.5 text-base-content/25 group-hover:text-base-content/50 shrink-0 transition-colors"
+        fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+      >
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+      </svg>
     </Link>
   )
 }

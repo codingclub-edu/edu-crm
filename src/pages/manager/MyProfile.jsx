@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useFetch } from '../../hooks/useFetch'
 import { getMe, updateMe } from '../../api/auth'
-import { getMyStudentData } from '../../api/students'
+import { getMyTeacherData } from '../../api/teachers'
 import { LoadingState, ErrorState } from '../../components/PageShell'
 import { useTheme } from '../../context/ThemeContext'
 import { useAuth } from '../../context/AuthContext'
@@ -10,13 +10,10 @@ import { useAuth } from '../../context/AuthContext'
 const fmt = (n) => Number(n ?? 0).toLocaleString('ru-RU')
 
 const STATUS_STYLE = {
-  active:    { dot: 'bg-success', text: 'text-success', label: 'Active' },
-  inactive:  { dot: 'bg-warning', text: 'text-warning', label: 'Inactive' },
-  suspended: { dot: 'bg-error',   text: 'text-error',   label: 'Suspended' },
-  graduated: { dot: 'bg-info',    text: 'text-info',    label: 'Graduated' },
+  active:   { dot: 'bg-success', text: 'text-success', label: 'Active' },
+  inactive: { dot: 'bg-warning', text: 'text-warning', label: 'Inactive' },
+  suspended:{ dot: 'bg-error',   text: 'text-error',   label: 'Suspended' },
 }
-
-// ─── Edit modal ──────────────────────────────────────────────────────────────
 
 function EditModal({ user, onClose, onSaved }) {
   const [form, setForm] = useState({
@@ -55,10 +52,10 @@ function EditModal({ user, onClose, onSaved }) {
         {error && <div className="alert alert-error py-2 text-sm mb-4"><span>{error}</span></div>}
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {[
-            { label: 'Full name',     key: 'name',     type: 'text',     placeholder: 'Ali Karimov' },
-            { label: 'Phone',         key: 'phone',    type: 'tel',      placeholder: '+998901234567' },
-            { label: 'Email',         key: 'email',    type: 'email',    placeholder: 'ali@gmail.com' },
-            { label: 'New password',  key: 'password', type: 'password', placeholder: 'Leave blank to keep current' },
+            { label: 'Full name',    key: 'name',     type: 'text',     placeholder: 'Sardor Karimov' },
+            { label: 'Phone',        key: 'phone',    type: 'tel',      placeholder: '+998901234567' },
+            { label: 'Email',        key: 'email',    type: 'email',    placeholder: 'sardor@gmail.com' },
+            { label: 'New password', key: 'password', type: 'password', placeholder: 'Leave blank to keep current' },
           ].map(({ label, key, type, placeholder }) => (
             <div key={key}>
               <p className="text-xs text-base-content/50 font-medium uppercase tracking-wider mb-1.5">{label}</p>
@@ -82,11 +79,9 @@ function EditModal({ user, onClose, onSaved }) {
   )
 }
 
-// ─── Main ────────────────────────────────────────────────────────────────────
-
-export default function MyProfile() {
+export default function TeacherProfile() {
   const { data: profile, loading: pLoading, error: pError } = useFetch(getMe)
-  const { data: studentData, loading: sLoading } = useFetch(getMyStudentData)
+  const { data: teacherData, loading: tLoading } = useFetch(getMyTeacherData)
   const { theme, setTheme, themes } = useTheme()
   const { logout } = useAuth()
   const navigate = useNavigate()
@@ -98,34 +93,28 @@ export default function MyProfile() {
     navigate('/login', { replace: true })
   }
 
-  if (pLoading || sLoading) return <LoadingState />
+  if (pLoading || tLoading) return <LoadingState />
   if (pError) return <ErrorState message={pError} />
 
-  const user     = localUser ?? profile
-  const bal      = studentData ?? {}
-  const balance  = Number(bal.balance  ?? user?.balance?.balance  ?? 0)
-  const debit    = Number(bal.debit    ?? user?.balance?.debit    ?? 0)
-  const credit   = Number(bal.credit   ?? user?.balance?.credit   ?? 0)
-  const expected = Number(bal.expectedPayments ?? user?.balance?.expectedPayments ?? 0)
-  const actual   = Number(bal.actualPayments   ?? user?.balance?.actualPayments   ?? 0)
-  const unpaid   = bal.unpaidMonths ?? user?.balance?.unpaidMonths ?? []
+  const user   = localUser ?? profile
+  const bal    = (localUser ?? profile)?.balance ?? teacherData ?? {}
+  const salary = Number(bal.expectedSalary ?? teacherData?.salary ?? 0)
+  const balance= Number(bal.balance ?? teacherData?.balance ?? 0)
+  const credit = Number(bal.credit  ?? bal.actualPayments ?? teacherData?.credit ?? 0)
+  const debit  = Number(bal.debit   ?? teacherData?.debit  ?? 0)
 
-  const status      = studentData?.status ?? 'active'
+  const status      = teacherData?.status ?? 'active'
   const statusStyle = STATUS_STYLE[status] ?? STATUS_STYLE.active
   const initials    = user?.name?.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2) ?? '??'
 
   return (
     <div className="flex flex-col gap-6">
 
-      {/* ── Hero banner ───────────────────────────────────── */}
+      {/* ── Hero banner ── */}
       <div className="rounded-2xl bg-base-100 border border-base-200 shadow-sm overflow-hidden">
-
-        {/* Top colour strip */}
         <div className="h-24 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent" />
 
-        {/* Content row — overlaps strip */}
         <div className="px-8 pb-6 -mt-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-
           {/* Avatar + name */}
           <div className="flex items-end gap-4">
             <div className="avatar placeholder shrink-0">
@@ -148,19 +137,13 @@ export default function MyProfile() {
 
           {/* Actions */}
           <div className="flex items-center gap-2 self-start sm:self-auto">
-            <button
-              onClick={() => setEditOpen(true)}
-              className="btn btn-outline btn-sm gap-2"
-            >
+            <button onClick={() => setEditOpen(true)} className="btn btn-outline btn-sm gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
               </svg>
               Edit
             </button>
-            <button
-              onClick={handleLogout}
-              className="btn btn-ghost btn-sm gap-2 text-error hover:bg-error/10"
-            >
+            <button onClick={handleLogout} className="btn btn-ghost btn-sm gap-2 text-error hover:bg-error/10">
               <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
@@ -177,28 +160,27 @@ export default function MyProfile() {
         </div>
       </div>
 
-      {/* ── Two-column row ────────────────────────────────── */}
+      {/* ── Two-column row ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        {/* Balance card — wider */}
+        {/* Salary balance card */}
         <div className="lg:col-span-2 rounded-2xl bg-base-100 border border-base-200 shadow-sm p-6 flex flex-col gap-5">
-          <p className="text-xs font-semibold text-base-content/40 uppercase tracking-widest">Payment Balance</p>
+          <p className="text-xs font-semibold text-base-content/40 uppercase tracking-widest">Salary Balance</p>
 
           {/* Big number */}
           <div className="flex items-baseline gap-1.5">
-            <span className={`text-4xl font-bold tabular-nums ${balance < 0 ? 'text-error' : 'text-success'}`}>
-              {balance < 0 ? '−' : '+'}{fmt(Math.abs(balance))}
+            <span className={`text-4xl font-bold tabular-nums ${balance >= 0 ? 'text-success' : 'text-error'}`}>
+              {balance >= 0 ? '+' : '−'}{fmt(Math.abs(balance))}
             </span>
             <span className="text-sm text-base-content/30 font-medium">UZS</span>
           </div>
 
-          {/* 4-stat grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-base-200">
+          {/* 3-stat grid */}
+          <div className="grid grid-cols-3 gap-4 pt-4 border-t border-base-200">
             {[
-              { label: 'Expected', value: expected, color: 'text-base-content' },
-              { label: 'Paid',     value: actual,   color: 'text-success' },
-              { label: 'Debit',    value: debit,    color: 'text-error' },
-              { label: 'Credit',   value: credit,   color: 'text-success' },
+              { label: 'Monthly Salary', value: salary, color: 'text-base-content' },
+              { label: 'Paid (Credit)',  value: credit, color: 'text-success' },
+              { label: 'Debit',          value: debit,  color: 'text-error' },
             ].map(({ label, value, color }) => (
               <div key={label} className="flex flex-col gap-0.5">
                 <p className="text-xs text-base-content/40">{label}</p>
@@ -208,28 +190,9 @@ export default function MyProfile() {
               </div>
             ))}
           </div>
-
-          {/* Unpaid months */}
-          {unpaid.length > 0 && (
-            <div className="flex items-start gap-3 pt-4 border-t border-base-200">
-              <div className="w-5 h-5 rounded-full bg-error/15 flex items-center justify-center shrink-0 mt-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-error" />
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-error mb-2">Unpaid months</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {unpaid.map((m) => (
-                    <span key={m} className="text-xs px-2.5 py-0.5 rounded-full bg-error/10 text-error font-mono font-medium">
-                      {m}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
-        {/* Appearance card — narrower */}
+        {/* Appearance card */}
         <div className="rounded-2xl bg-base-100 border border-base-200 shadow-sm p-6 flex flex-col gap-4">
           <p className="text-xs font-semibold text-base-content/40 uppercase tracking-widest">Appearance</p>
           <p className="text-sm text-base-content/60 -mt-1">Choose your preferred theme</p>
@@ -254,7 +217,6 @@ export default function MyProfile() {
             ))}
           </div>
         </div>
-
       </div>
 
       {editOpen && (

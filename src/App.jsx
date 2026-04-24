@@ -7,6 +7,9 @@ import Login from "./pages/Login";
 import Unauthorized from "./pages/Unauthorized";
 import AdminDashboard from "./pages/admin/Dashboard";
 import ManagerDashboard from "./pages/manager/Dashboard";
+import ManagerMyGroups from "./pages/manager/MyGroups";
+import GroupDetail from "./pages/manager/GroupDetail";
+import TeacherProfile from "./pages/manager/MyProfile";
 import UserDashboard from "./pages/user/Dashboard";
 import StudentsPage from "./pages/admin/Students";
 import MyProfile from "./pages/student/MyProfile";
@@ -41,11 +44,10 @@ export default function App() {
           {/* Teacher routes */}
           <Route element={<ProtectedRoute allowedRoles={["teacher"]} />}>
             <Route element={<DashboardLayout />}>
-              <Route path="/manager/dashboard" element={<ManagerDashboard />} />
-              <Route path="/manager/students" element={<StudentsPage />} />
-              <Route path="/manager/contacts" element={<PlaceholderPage title="Contacts" />} />
-              <Route path="/manager/deals" element={<PlaceholderPage title="Deals" />} />
-              <Route path="/manager/reports" element={<PlaceholderPage title="Reports" />} />
+              <Route path="/teacher/dashboard"  element={<ManagerDashboard />} />
+              <Route path="/teacher/groups"     element={<ManagerMyGroups />} />
+              <Route path="/teacher/groups/:id" element={<GroupDetail />} />
+              <Route path="/teacher/profile"    element={<TeacherProfile />} />
             </Route>
           </Route>
 

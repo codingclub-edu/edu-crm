@@ -1,29 +1,49 @@
-import { createContext, useContext, useState, useCallback } from 'react'
-import api from '../api/axios'
+import { createContext, useContext, useEffect, useCallback } from 'react'
+import { useAtom } from 'jotai'
+import api, { callRefresh } from '../api/axios'
+import {
+  accessTokenAtom,
+  userAtom,
+  initializedAtom,
+  loadingAtom,
+  authErrorAtom,
+} from '../store/auth'
 
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
-    try {
-      const stored = localStorage.getItem('user')
-      return stored ? JSON.parse(stored) : null
-    } catch {
-      return null
-    }
-  })
+  const [accessToken, setAccessToken] = useAtom(accessTokenAtom)
+  const [user,        setUser]        = useAtom(userAtom)
+  const [initialized, setInitialized] = useAtom(initializedAtom)
+  const [loading,     setLoading]     = useAtom(loadingAtom)
+  const [error,       setError]       = useAtom(authErrorAtom)
 
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
+  // Silently restore session on every page load via the httpOnly refresh cookie
+  useEffect(() => {
+    callRefresh()
+      .then(({ data }) => {
+        setAccessToken(data.accessToken)
+        if (data.user) setUser(data.user)
+        api.defaults.headers.common.Authorization = `Bearer ${data.accessToken}`
+      })
+      .catch(() => {
+        // No valid cookie — user needs to log in manually, no redirect here
+        setAccessToken(null)
+        setUser(null)
+      })
+      .finally(() => {
+        setInitialized(true)
+      })
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const login = useCallback(async (credentials) => {
     setLoading(true)
     setError(null)
     try {
       const { data } = await api.post('/auth/login', credentials)
-      localStorage.setItem('access_token', data.accessToken)
-      localStorage.setItem('user', JSON.stringify(data.user))
+      setAccessToken(data.accessToken)
       setUser(data.user)
+      api.defaults.headers.common.Authorization = `Bearer ${data.accessToken}`
       return data.user
     } catch (err) {
       const message = err.response?.data?.message || 'Login failed'
@@ -32,19 +52,19 @@ export function AuthProvider({ children }) {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [setAccessToken, setUser, setLoading, setError])
 
   const logout = useCallback(async () => {
     try { await api.post('/auth/logout') } catch { /* ignore */ }
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('user')
+    setAccessToken(null)
     setUser(null)
-  }, [])
+    delete api.defaults.headers.common.Authorization
+  }, [setAccessToken, setUser])
 
-  const isAuthenticated = !!user && !!localStorage.getItem('access_token')
+  const isAuthenticated = !!user && !!accessToken
 
   return (
-    <AuthContext.Provider value={{ user, loading, error, login, logout, isAuthenticated }}>
+    <AuthContext.Provider value={{ user, loading, error, login, logout, isAuthenticated, initialized }}>
       {children}
     </AuthContext.Provider>
   )
