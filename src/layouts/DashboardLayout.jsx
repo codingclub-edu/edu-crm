@@ -20,7 +20,7 @@ export default function DashboardLayout() {
       />
 
       {/* ── Page content ── */}
-      <p></p>
+
       <div className="drawer-content flex flex-col bg-base-200 min-h-screen">
         {/* Mobile top bar */}
         <header className="lg:hidden flex items-center gap-3 h-14 px-4 bg-base-100 border-b border-base-200 sticky top-0 z-30">
