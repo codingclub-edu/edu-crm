@@ -2,9 +2,10 @@ import axios from "axios";
 import { accessTokenAtom, userAtom, authStore } from "../store/auth";
 
 const api = axios.create({
-  baseURL: "/api", // relative → Vite proxy forwards to the real server
+  baseURL: import.meta.env.VITE_API_BASE_URL + "/api", // relative → Vite proxy forwards to the real server
   withCredentials: true,
   headers: {
+    // headers: {
     "Content-Type": "application/json",
     "ngrok-skip-browser-warning": "true",
   },
